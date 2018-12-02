@@ -154,7 +154,11 @@ function LayerCabinet(data, dispatcher) {
   });
   top.appendChild(operations_div);
   // top.appendChild(document.createElement('br'));
+  var file_open = new IconButton(16, "folder_open_alt", "Open", dispatcher);
+  style(file_open.dom, op_button_styles);
+  operations_div.appendChild(file_open.dom);
 
+  /*
   // open _alt
   var file_open = new IconButton(16, "folder_open_alt", "Open", dispatcher);
   style(file_open.dom, op_button_styles);
@@ -298,6 +302,8 @@ function LayerCabinet(data, dispatcher) {
   upload_alt.onClick(function() {
     dispatcher.fire("openfile");
   });
+
+*/
 
   var span = document.createElement("span");
   span.style.width = "20px";

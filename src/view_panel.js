@@ -383,7 +383,7 @@ function TimelinePanel(data, dispatcher) {
       t = t ? parseInt(t, 10) : 0;
       //t = utils.format_friendly_seconds(t);
 
-      ctx.fillText(t, x, 38);
+      ctx.fillText(t, x, 25);
     }
 
     units = time_scale / tickMark2;
@@ -394,8 +394,8 @@ function TimelinePanel(data, dispatcher) {
       ctx.strokeStyle = Theme.c;
       ctx.beginPath();
       x = i * units + LEFT_GUTTER - offsetUnits;
-      ctx.moveTo(x, MARKER_TRACK_HEIGHT - 0);
-      ctx.lineTo(x, MARKER_TRACK_HEIGHT - 16);
+      ctx.moveTo(x, MARKER_TRACK_HEIGHT - 0 - 10);
+      ctx.lineTo(x, MARKER_TRACK_HEIGHT - 16 - 10);
       ctx.stroke();
     }
 
@@ -409,8 +409,8 @@ function TimelinePanel(data, dispatcher) {
       ctx.strokeStyle = Theme.c;
       ctx.beginPath();
       x = i * units + LEFT_GUTTER - offsetUnits;
-      ctx.moveTo(x, MARKER_TRACK_HEIGHT - 0);
-      ctx.lineTo(x, MARKER_TRACK_HEIGHT - 10);
+      ctx.moveTo(x, MARKER_TRACK_HEIGHT - 0 - 10);
+      ctx.lineTo(x, MARKER_TRACK_HEIGHT - 10 - 10);
       ctx.stroke();
     }
 

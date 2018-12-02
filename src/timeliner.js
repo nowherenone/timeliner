@@ -33,6 +33,7 @@ function LayerProp(name) {
   this._color = "#" + ((Math.random() * 0xffffff) | 0).toString(16);
 
   this.highlights = [];
+  this.markers = [];
 
   this.update = function(update) {};
   /*
@@ -223,7 +224,6 @@ function Timeliner(target, host) {
   });
 
   dispatcher.on("update.scale", function(v) {
-    console.log("range", v);
     data.get("ui:timeScale").value = v;
 
     timeline.repaint();
@@ -283,51 +283,6 @@ function Timeliner(target, host) {
 		End Paint Routines
 	*/
 
-  function save(name) {
-    if (!name) name = "autosave";
-
-    var json = data.getJSONString();
-
-    try {
-      localStorage[STORAGE_PREFIX + name] = json;
-      dispatcher.fire("save:done");
-    } catch (e) {
-      console.log("Cannot save", name, json);
-    }
-  }
-
-  function saveAs(name) {
-    if (!name) name = data.get("name").value;
-    name = prompt("Pick a name to save to (localStorage)", name);
-    if (name) {
-      data.data.name = name;
-      save(name);
-    }
-  }
-
-  function saveSimply() {
-    var name = data.get("name").value;
-    if (name) {
-      save(name);
-    } else {
-      saveAs(name);
-    }
-  }
-
-  function exportJSON() {
-    var json = data.getJSONString();
-    var ret = prompt("Hit OK to download otherwise Copy and Paste JSON", json);
-
-    console.log(JSON.stringify(data.data, null, "\t"));
-    if (!ret) return;
-
-    // make json downloadable
-    json = data.getJSONString("\t");
-    var fileName = "timeliner-test" + ".json";
-
-    saveToFile(json, fileName);
-  }
-
   function loadJSONString(o) {
     // should catch and check errors here
     var json = JSON.parse(o);
@@ -374,13 +329,6 @@ function Timeliner(target, host) {
     timeline.repaint();
   }
 
-  function promptImport() {
-    var json = prompt("Paste JSON in here to Load");
-    if (!json) return;
-    console.log("Loading.. ", json);
-    loadJSONString(json);
-  }
-
   function open(title) {
     if (title) {
       loadJSONString(localStorage[STORAGE_PREFIX + title]);
@@ -389,34 +337,23 @@ function Timeliner(target, host) {
 
   this.openLocalSave = open;
 
-  dispatcher.on(
-    "import",
-    function() {
-      promptImport();
-    }.bind(this)
-  );
-
   dispatcher.on("new", function() {
     data.blank();
     updateState();
   });
 
-  dispatcher.on("openfile", function() {
-    openAs(function(data) {
-      // console.log('loaded ' + data);
-      loadJSONString(data);
-    }, div);
-  });
-
+  /*  
   dispatcher.on("open", open);
   dispatcher.on("export", exportJSON);
 
   dispatcher.on("save", saveSimply);
   dispatcher.on("save_as", saveAs);
 
+
   // Expose API
   this.save = save;
   this.load = load;
+  */
 
   /*
 		Start DOM Stuff (should separate file)
@@ -664,12 +601,21 @@ function Timeliner(target, host) {
 
   this.addLayer = addLayer;
 
-  function setLayerHighLights(name, layerUpdate) {
-    layers = layer_store.value || {};
-    let layer = layers.find(l => l.name === name);
-    layer.highlights = layerUpdate;
-    console.log("aa", layers, layer);
+  function setLayerValues(name, markers = []) {
+    let layer = (layer_store.value || {}).find(l => l.name === name);
+    layer.values = markers.map(m => {
+      return {
+        time: m
+      };
+    });
+    layer_panel.setState(layer_store);
+  }
 
+  this.setLayerValues = setLayerValues;
+
+  function setLayerHighLights(name, layerUpdate) {
+    let layer = (layer_store.value || {}).find(l => l.name === name);
+    layer.highlights = layerUpdate;
     layer_panel.setState(layer_store);
   }
 
@@ -723,8 +669,8 @@ function Timeliner(target, host) {
   }
 
   window.addEventListener("resize", function() {
-    if (snapType) resizeEdges();
-    else needsResize = true;
+    //if (snapType) resizeEdges();
+    //else needsResize = true;
   });
 
   setBounds(pane);
