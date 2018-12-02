@@ -124,7 +124,7 @@ function TimelinePanel(data, dispatcher) {
         .closePath();
     };
 
-    console.log(color);
+    //console.log(color);
     this.paint = function() {
       this.path();
       ctx.fillStyle = color;
@@ -235,7 +235,7 @@ function TimelinePanel(data, dispatcher) {
 
       y = i * LINE_HEIGHT;
 
-      console.log(highlights);
+      //console.log(highlights);
 
       for (j = 0; j < highlights.length; j++) {
         var marker = highlights[j];
@@ -385,6 +385,9 @@ function TimelinePanel(data, dispatcher) {
 
       ctx.fillText(t, x, 25);
     }
+
+    // Save it for automatical scrolling
+    data.setValue("ui:maxVisibleTime", t);
 
     units = time_scale / tickMark2;
     count = (width - LEFT_GUTTER + offsetUnits) / units;

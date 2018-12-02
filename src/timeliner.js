@@ -49,6 +49,7 @@ function Timeliner(target, host) {
   // Dispatcher for coordination
   var dispatcher = new Dispatcher();
 
+  this.dispatcher = dispatcher;
   //hostElement = host;
 
   // Data
@@ -63,6 +64,8 @@ function Timeliner(target, host) {
 
   // Views
   var timeline = new TimelinePanel(data, dispatcher);
+  this.timeline = timeline;
+
   var layer_panel = new LayerCabinet(data, dispatcher);
 
   setTimeout(function() {
@@ -87,10 +90,12 @@ function Timeliner(target, host) {
       });
 
       undo_manager.save(new UndoState(data, "Add Keyframe"));
-    } else {
-      console.log("remove from index", v);
-      layer.values.splice(v.index, 1);
 
+      dispatcher.fire("keyframe.add", t);
+    } else {
+      //console.log("remove from index", v);
+      layer.values.splice(v.index, 1);
+      dispatcher.fire("keyframe.remove", t);
       undo_manager.save(new UndoState(data, "Remove Keyframe"));
     }
 
@@ -126,9 +131,7 @@ function Timeliner(target, host) {
 
   dispatcher.on("action:solo", function(layer, solo) {
     layer._solo = solo;
-
     console.log(layer, solo);
-
     // When a track is solo-ed, playback only changes values
     // of that layer.
   });
@@ -165,9 +168,9 @@ function Timeliner(target, host) {
 
   dispatcher.on("controls.toggle_play", function() {
     if (start_play) {
-      pausePlaying();
+      dispatcher.fire("controls.pause");
     } else {
-      startPlaying();
+      dispatcher.fire("controls.play");
     }
   });
 
@@ -184,9 +187,10 @@ function Timeliner(target, host) {
 
   function startPlaying() {
     // played_from = timeline.current_frame;
-    start_play = performance.now() - data.get("ui:currentTime").value * 1000;
+    start_play = 1;
+
     layer_panel.setControlStatus(true);
-    // dispatcher.fire('controls.status', true);
+    //dispatcher.fire('controls.status', true);
   }
 
   function pausePlaying() {
@@ -209,13 +213,39 @@ function Timeliner(target, host) {
     repaintAll();
   });
 
+  this.scrollX = function(time) {
+    dispatcher.fire("update.scrollTime", time);
+  };
+
   function setCurrentTime(value) {
     value = Math.max(0, value);
     currentTimeStore.value = value;
+    //if (start_play) start_play = performance.now() - value * 1000;
 
-    if (start_play) start_play = performance.now() - value * 1000;
+    // processing automatic horizontal scrolling
+    if (value !== undefined) {
+      var currentScrollTime = data.get("ui:scrollTime").value;
+      var maxVisibleTime = data.get("ui:maxVisibleTime").value;
+
+      var checkForward = value - maxVisibleTime + 5;
+      var checkBack = value - currentScrollTime + 5;
+
+      if (checkForward > 0) {
+        dispatcher.fire("update.scrollTime", currentScrollTime + checkForward);
+      } else {
+        if (checkBack < 0) {
+          var shiftback = value - 5;
+          dispatcher.fire("update.scrollTime", shiftback > 0 ? shiftback : 0);
+        }
+      }
+      /*
+      if (checkBack > 0) {
+        dispatcher.fire("update.scrollTime", currentScrollTime - checkBack);
+      }*/
+      //dispatcher.fire("update.scrollTime", value);
+    }
+
     repaintAll();
-    // layer_panel.repaint(s);
   }
   this.setCurrentTime = setCurrentTime;
 
@@ -252,13 +282,16 @@ function Timeliner(target, host) {
     requestAnimationFrame(paint);
 
     if (start_play) {
-      var t = (performance.now() - start_play) / 1000;
-      setCurrentTime(t);
-
+      //var t = (performance.now() - start_play) / 1000;
+      //setCurrentTime(t);
+      //if (data.get("ui:currentTime").value>=data.get("ui:totalTime").value) {
+      //setCurrentTime(0);
+      //}
+      /*
       if (t > data.get("ui:totalTime").value) {
         // simple loop
         start_play = performance.now();
-      }
+      }*/
     }
 
     if (needsResize) {
@@ -416,7 +449,7 @@ function Timeliner(target, host) {
 
   dispatcher.on("state:save", function(description) {
     dispatcher.fire("status", description);
-    save("autosave");
+    //save("autosave");
   });
 
   dispatcher.on("status", this.setStatus);
@@ -542,7 +575,9 @@ function Timeliner(target, host) {
     } else if (e.keyCode == 27) {
       // Esc = stop. FIXME: should rewind head to last played from or Last pointed from?
       dispatcher.fire("controls.pause");
-    } else console.log("keydown", e.keyCode);
+    } else {
+      // console.log("keydown", e.keyCode);
+    }
   });
 
   var needsResize = true;

@@ -17,7 +17,7 @@
     </style>
     <div
       id="host"
-      style="position: absolute; top 10px; left:10px; background : #888; width: 700px; height: 600px;"
+      style="position: absolute; top 10px; left:10px; background : #888; width: 700px; height: 150px;"
     ></div>
 
     <div id="box"></div>
@@ -36,6 +36,10 @@
       timeliner.addLayer("y");
       timeliner.addLayer("rotate");
       timeliner.addLayer("rotate2");
+      timeliner.addLayer("x2");
+      timeliner.addLayer("y3");
+      timeliner.addLayer("rotate4");
+      timeliner.addLayer("rotate256");
 
       timeliner.setDuration(25);
       timeliner.setCurrentTime(3);
@@ -49,6 +53,42 @@
           color: "#008800"
         }
       ]);
+
+      console.log(timeliner);
+
+      //keyframe.move
+      timeliner.dispatcher.on("time.update", d => {
+        console.log("time.update", d);
+      });
+
+      timeliner.dispatcher.on("keyframe.move", d => {
+        console.log("keyframe.move", d);
+      });
+
+      timeliner.dispatcher.on("keyframe.add", d => {
+        console.log("keyframe.add", d);
+      });
+
+      timeliner.dispatcher.on("keyframe.remove", d => {
+        console.log("keyframe.remove", d);
+      });
+
+      timeliner.dispatcher.on("controls.play", d => {
+        console.log("controls.play", d);
+      });
+
+      timeliner.dispatcher.on("controls.pause", d => {
+        console.log("controls.pause", d);
+      });
+
+      timeliner.dispatcher.on("controls.stop", d => {
+        console.log("controls.stop", d);
+      });
+
+      // dispatcher.on("controls.play", startPlaying);
+      //dispatcher.on("controls.pause", pausePlaying);
+
+      // console.log();
 
       // var o = {"version":"1.2.0","modified":"Mon Dec 08 2014 10:41:11 GMT+0800 (SGT)","title":"Untitled", "layers": [{"name":"x","values":[],"tmpValue":0,"_color":"#10b00d"},{"name":"y","values":[{"time":0,"value":-1.2999770000000004,"_color":"#4a2392","tween":"quadEaseIn"},{"time":3.3,"value":-1.1999850000000003,"_color":"#cddfd8"}],"tmpValue":-1.2999770000000004,"_color":"#344260"},{"name":"rotate","values":[{"time":0,"value":4.200005,"_color":"#ec9bb5","tween":"quadEaseInOut"},{"time":2.1,"value":28.000009,"_color":"#ac8e14","tween":"quadEaseIn"},{"time":5,"value":50.400018,"_color":"#5c659"}],"tmpValue":50.400018,"_color":"#1fa995"}]};
       // timeliner.load(o);

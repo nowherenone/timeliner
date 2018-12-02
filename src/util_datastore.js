@@ -63,7 +63,7 @@ DataStore.prototype.getValue = function(paths) {
   for (var i = 0, il = descend.length; i < il; i++) {
     var path = descend[i];
     if (reference[path] === undefined) {
-      console.warn("Cant find " + paths);
+      //console.warn("Cant find " + paths);
       return;
     }
     reference = reference[path];

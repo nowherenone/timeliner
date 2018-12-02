@@ -76,7 +76,7 @@ function ScrollCanvas(dispatcher, data) {
     ctx.stroke();
 
     var totalTimePixels = totalTime * pixels_per_second;
-    console.log("totalTimePixels", totalTimePixels);
+    //console.log("totalTimePixels", totalTimePixels);
     var k = totalTimePixels / w;
     scroller.k = k;
 

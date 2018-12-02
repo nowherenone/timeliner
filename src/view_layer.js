@@ -36,7 +36,7 @@ function LayerView(layer, dispatcher) {
     "px; border-style:none; outline: none;"; //  border-style:inset;
 
   keyframe_button.addEventListener("click", function(e) {
-    console.log("clicked:keyframing...", state.get("_value").value);
+    //console.log("clicked:keyframing...", state.get("_value").value);
     dispatcher.fire("keyframe", layer, state.get("_value").value);
   });
 

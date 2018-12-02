@@ -139,10 +139,14 @@ function LayerCabinet(data, dispatcher) {
   // Play Controls
   var currentTime = document.createElement("span");
   var totalTime = document.createElement("span");
+  var timeBlock = document.createElement("div");
+  timeBlock.style = "display:inline-block; width : 50px";
 
-  top.appendChild(currentTime);
-  top.appendChild(document.createTextNode("/")); // 0:00:00 / 0:10:00
-  top.appendChild(totalTime);
+  timeBlock.appendChild(currentTime);
+  timeBlock.appendChild(document.createTextNode("/")); // 0:00:00 / 0:10:00
+  timeBlock.appendChild(totalTime);
+
+  top.appendChild(timeBlock);
   top.appendChild(play_button.dom);
   top.appendChild(stop_button.dom);
   top.appendChild(range);
@@ -406,12 +410,14 @@ function LayerCabinet(data, dispatcher) {
       // layer_uis[i].setState(layer);
     }
 
+    /*
     console.log(
       "Total layers (view, hidden, total)",
       layer_uis.length,
       unused_layers.length,
       layer_uis.length + unused_layers.length
     );
+    */
   };
 
   function repaint(s) {
