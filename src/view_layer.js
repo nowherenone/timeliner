@@ -83,37 +83,6 @@ function LayerView(layer, dispatcher) {
     this.dom = button;
   }
 
-  /*
-  // Solo
-  var solo_toggle = new ToggleButton("S");
-  dom.appendChild(solo_toggle.dom);
-
-  solo_toggle.onClick = function() {
-    dispatcher.fire("action:solo", layer, solo_toggle.pressed);
-  };
-
-  // Mute
-  var mute_toggle = new ToggleButton("M");
-  dom.appendChild(mute_toggle.dom);
-
-  mute_toggle.onClick = function() {
-    dispatcher.fire("action:mute", layer, mute_toggle.pressed);
-  };
-
-  
-  var number = new UINumber(layer, dispatcher);
-
-  number.onChange.do(function(value, done) {
-    state.get("_value").value = value;
-    dispatcher.fire("value.change", layer, value, done);
-  });
- 
-
-  utils.style(number.dom, {
-    float: "right"
-  });
-   */
-
   dom.appendChild(label);
   dom.appendChild(keyframe_button);
   //dom.appendChild(number.dom);

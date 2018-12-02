@@ -58,6 +58,7 @@ function LayerCabinet(data, dispatcher) {
     dispatcher.fire("controls.stop");
   });
 
+  /*
   var undo_button = new IconButton(16, "undo", "undo", dispatcher);
   style(undo_button.dom, op_button_styles);
   undo_button.onClick(function() {
@@ -69,6 +70,7 @@ function LayerCabinet(data, dispatcher) {
   redo_button.onClick(function() {
     dispatcher.fire("controls.redo");
   });
+  */
 
   var range = document.createElement("input");
   range.type = "range";
@@ -107,8 +109,8 @@ function LayerCabinet(data, dispatcher) {
     step: 0.125
   };
 
-  var currentTime = new UINumber(time_options);
-  var totalTime = new UINumber(time_options);
+  // var currentTime = new UINumber(time_options);
+  // var totalTime = new UINumber(time_options);
 
   var currentTimeStore = data.get("ui:currentTime");
   var totalTimeStore = data.get("ui:totalTime");
@@ -122,9 +124,9 @@ function LayerCabinet(data, dispatcher) {
   // 		view.setValue = v;
   // 	})
   // }
-
+  /*
   currentTime.onChange.do(function(value, done) {
-    dispatcher.fire("time.update", value);
+    //dispatcher.fire("time.update", value);
     // repaint();
   });
 
@@ -132,11 +134,15 @@ function LayerCabinet(data, dispatcher) {
     totalTimeStore.value = value;
     repaint();
   });
+*/
 
   // Play Controls
-  top.appendChild(currentTime.dom);
+  var currentTime = document.createElement("span");
+  var totalTime = document.createElement("span");
+
+  top.appendChild(currentTime);
   top.appendChild(document.createTextNode("/")); // 0:00:00 / 0:10:00
-  top.appendChild(totalTime.dom);
+  top.appendChild(totalTime);
   top.appendChild(play_button.dom);
   top.appendChild(stop_button.dom);
   top.appendChild(range);
@@ -298,11 +304,15 @@ function LayerCabinet(data, dispatcher) {
   span.style.display = "inline-block";
   operations_div.appendChild(span);
 
-  operations_div.appendChild(undo_button.dom);
-  operations_div.appendChild(redo_button.dom);
+  //operations_div.appendChild(undo_button.dom);
+  //operations_div.appendChild(redo_button.dom);
   operations_div.appendChild(document.createElement("br"));
 
   // Cloud Download / Upload edit pencil
+
+  // remove layer
+  //var minus = new IconButton(16, "minus", "minus", dispatcher);
+  //operations_div.appendChild(minus.dom);
 
   /*
 	// // show layer
@@ -314,9 +324,7 @@ function LayerCabinet(data, dispatcher) {
 	// operations_div.appendChild(eye_close.dom);
 
 
-	// remove layer
-	var minus = new IconButton(16, 'minus', 'minus', dispatcher);
-	operations_div.appendChild(minus.dom);
+
 
 	// check
 	var ok = new IconButton(16, 'ok', 'ok', dispatcher);
@@ -328,7 +336,7 @@ function LayerCabinet(data, dispatcher) {
 
 	*/
 
-  // range.addEventListener('change', changeRange);
+  range.addEventListener("change", changeRange);
 
   function convertPercentToTime(t) {
     var min_time = 10 * 60; // 10 minutes
@@ -371,7 +379,7 @@ function LayerCabinet(data, dispatcher) {
     layer_store = state;
     layers = layer_store.value;
     // layers = state;
-    console.log(layer_uis.length, layers);
+    //console.log(layer_uis.length, layers);
     var i, layer;
     for (i = 0; i < layers.length; i++) {
       layer = layers[i];
@@ -401,12 +409,16 @@ function LayerCabinet(data, dispatcher) {
   };
 
   function repaint(s) {
-    s = currentTimeStore.value;
-    currentTime.setValue(s);
-    totalTime.setValue(totalTimeStore.value);
-    currentTime.paint();
-    totalTime.paint();
+    var current = currentTimeStore.value;
+    var total = totalTimeStore.value;
 
+    // currentTime.setValue(s);
+    // totalTime.setValue(totalTimeStore.value);
+    // currentTime.paint();
+    // totalTime.paint();
+
+    currentTime.innerHTML = current ? parseInt(current, 10) : 0;
+    totalTime.innerHTML = total ? parseInt(total, 10) : 0;
     var i;
 
     s = s || 0;

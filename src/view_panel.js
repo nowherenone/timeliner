@@ -6,6 +6,7 @@ var Settings = require("./settings"),
   handleDrag = require("./util_handle_drag"),
   ScrollCanvas = require("./view_time_scroller"),
   Canvas = require("./ui_canvas");
+
 var LINE_HEIGHT = Settings.LINE_HEIGHT,
   DIAMOND_SIZE = Settings.DIAMOND_SIZE,
   TIME_SCROLLER_HEIGHT = 35,
@@ -113,7 +114,7 @@ function TimelinePanel(data, dispatcher) {
   var needsRepaint = false;
   var renderItems = [];
 
-  function EasingRect(x1, y1, x2, y2, frame, frame2, values, layer, j) {
+  function EasingRect(x1, y1, x2, y2, color, frame, frame2) {
     var self = this;
 
     this.path = function() {
@@ -123,9 +124,10 @@ function TimelinePanel(data, dispatcher) {
         .closePath();
     };
 
+    console.log(color);
     this.paint = function() {
       this.path();
-      ctx.fillStyle = frame._color;
+      ctx.fillStyle = color;
       ctx.fill();
     };
 
@@ -227,42 +229,26 @@ function TimelinePanel(data, dispatcher) {
     for (i = 0; i < il; i++) {
       // check for keyframes
       var layer = layers[i];
+
       var values = layer.values;
+      var highlights = layer.highlights || [];
 
       y = i * LINE_HEIGHT;
 
-      for (j = 0; j < values.length - 1; j++) {
-        frame = values[j];
-        frame2 = values[j + 1];
+      console.log(highlights);
 
+      for (j = 0; j < highlights.length; j++) {
+        var marker = highlights[j];
         // Draw Tween Rect
-        x = time_to_x(frame.time);
-        var x2 = time_to_x(frame2.time);
-
-        if (!frame.tween || frame.tween == "none") continue;
+        x = time_to_x(marker.from);
+        var x2 = time_to_x(marker.to);
 
         var y1 = y + 2;
         var y2 = y + LINE_HEIGHT - 2;
 
-        renderItems.push(new EasingRect(x, y1, x2, y2, frame, frame2));
-
-        // // draw easing graph
-        // var color = parseInt(frame._color.substring(1,7), 16);
-        // color = 0xffffff ^ color;
-        // color = color.toString(16);           // convert to hex
-        // color = '#' + ('000000' + color).slice(-6);
-
-        // ctx.strokeStyle = color;
-        // var x3;
-        // ctx.beginPath();
-        // ctx.moveTo(x, y2);
-        // var dy = y1 - y2;
-        // var dx = x2 - x;
-
-        // for (x3=x; x3 < x2; x3++) {
-        // 	ctx.lineTo(x3, y2 + Tweens[frame.tween]((x3 - x)/dx) * dy);
-        // }
-        // ctx.stroke();
+        renderItems.push(
+          new EasingRect(x, y1, x2, y2, marker.color, marker.from, marker.to)
+        );
       }
 
       for (j = 0; j < values.length; j++) {
@@ -394,7 +380,9 @@ function TimelinePanel(data, dispatcher) {
       ctx.textAlign = "center";
 
       var t = (i * units - offsetUnits) / time_scale + frame_start;
-      t = utils.format_friendly_seconds(t);
+      t = t ? parseInt(t, 10) : 0;
+      //t = utils.format_friendly_seconds(t);
+
       ctx.fillText(t, x, 38);
     }
 
@@ -441,7 +429,8 @@ function TimelinePanel(data, dispatcher) {
     ctx.strokeStyle = "red"; // Theme.c
     x = (currentTime - frame_start) * time_scale + LEFT_GUTTER;
 
-    var txt = utils.format_friendly_seconds(currentTime);
+    // var txt = utils.format_friendly_seconds(currentTime);
+    var txt = parseInt(currentTime, 10);
     var textWidth = ctx.measureText(txt).width;
 
     var base_line = MARKER_TRACK_HEIGHT - 5,

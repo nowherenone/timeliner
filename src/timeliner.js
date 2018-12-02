@@ -31,6 +31,10 @@ function LayerProp(name) {
   this._value = 0;
 
   this._color = "#" + ((Math.random() * 0xffffff) | 0).toString(16);
+
+  this.highlights = [];
+
+  this.update = function(update) {};
   /*
 	this.max
 	this.min
@@ -212,6 +216,7 @@ function Timeliner(target, host) {
     repaintAll();
     // layer_panel.repaint(s);
   }
+  this.setCurrentTime = setCurrentTime;
 
   dispatcher.on("target.notify", function(name, value) {
     if (target) target[name] = value;
@@ -347,6 +352,12 @@ function Timeliner(target, host) {
     updateState();
   }
 
+  function setDuration(duration) {
+    data.setValue("ui:totalTime", duration);
+    updateState();
+  }
+  this.setDuration = setDuration;
+
   function updateState() {
     layers = layer_store.value; // FIXME: support Arrays
     layer_panel.setState(layer_store);
@@ -413,14 +424,11 @@ function Timeliner(target, host) {
 
   var div = document.createElement("div");
   div.style.cssText = "position: absolute;";
-  div.style.top = "22px";
+  //div.style.top = "22px";
 
   var pane = document.createElement("div");
 
   style(pane, {
-    //position: "fixed",
-    //top: "20px",
-    //left: "20px",
     margin: 0,
     border: "1px solid " + Theme.a,
     padding: 0,
@@ -433,49 +441,12 @@ function Timeliner(target, host) {
     width: "100%"
   });
 
-  var header_styles = {
-    position: "absolute",
-    top: "0px",
-    width: "100%",
-    height: "22px",
-    lineHeight: "22px",
-    overflow: "hidden"
-  };
-
   var button_styles = {
     width: "20px",
     height: "20px",
     padding: "2px",
     marginRight: "2px"
   };
-
-  var pane_title = document.createElement("div");
-  style(pane_title, header_styles, {
-    borderBottom: "1px solid " + Theme.b,
-    textAlign: "center"
-  });
-
-  var title_bar = document.createElement("span");
-  pane_title.appendChild(title_bar);
-
-  title_bar.innerHTML = "Timeliner " + package_json.version;
-  pane_title.appendChild(title_bar);
-
-  var top_right_bar = document.createElement("div");
-  style(top_right_bar, header_styles, {
-    textAlign: "right"
-  });
-
-  pane_title.appendChild(top_right_bar);
-
-  // resize minimize
-  // var resize_small = new IconButton(10, 'resize_small', 'minimize', dispatcher);
-  // top_right_bar.appendChild(resize_small.dom);
-
-  // resize full
-  var resize_full = new IconButton(10, "resize_full", "maximize", dispatcher);
-  style(resize_full.dom, button_styles, { marginRight: "2px" });
-  top_right_bar.appendChild(resize_full.dom);
 
   var pane_status = document.createElement("div");
 
@@ -496,7 +467,7 @@ function Timeliner(target, host) {
 
   pane.appendChild(div);
   pane.appendChild(pane_status);
-  pane.appendChild(pane_title);
+  //pane.appendChild(pane_title);
 
   var label_status = document.createElement("span");
   label_status.textContent = "hello!";
@@ -518,27 +489,6 @@ function Timeliner(target, host) {
     textAlign: "right"
   });
 
-  // var button_save = document.createElement('button');
-  // style(button_save, button_styles);
-  // button_save.textContent = 'Save';
-  // button_save.onclick = function() {
-  // 	save();
-  // };
-
-  // var button_load = document.createElement('button');
-  // style(button_load, button_styles);
-  // button_load.textContent = 'Import';
-  // button_load.onclick = this.promptLoad;
-
-  // var button_open = document.createElement('button');
-  // style(button_open, button_styles);
-  // button_open.textContent = 'Open';
-  // button_open.onclick = this.promptOpen;
-
-  // bottom_right.appendChild(button_load);
-  // bottom_right.appendChild(button_save);
-  // bottom_right.appendChild(button_open);
-
   pane_status.appendChild(label_status);
   pane_status.appendChild(bottom_right);
 
@@ -548,11 +498,11 @@ function Timeliner(target, host) {
   // zoom out
   var zoom_out = new IconButton(12, "zoom_out", "zoom out", dispatcher);
   // settings
-  var cog = new IconButton(12, "cog", "settings", dispatcher);
+  //var cog = new IconButton(12, "cog", "settings", dispatcher);
 
-  // bottom_right.appendChild(zoom_in.dom);
-  // bottom_right.appendChild(zoom_out.dom);
-  // bottom_right.appendChild(cog.dom);
+  bottom_right.appendChild(zoom_in.dom);
+  bottom_right.appendChild(zoom_out.dom);
+  //bottom_right.appendChild(cog.dom);
 
   // add layer
   var plus = new IconButton(12, "plus", "New Layer", dispatcher);
@@ -564,6 +514,7 @@ function Timeliner(target, host) {
 
     repaintAll();
   });
+
   style(plus.dom, button_styles);
   bottom_right.appendChild(plus.dom);
 
@@ -583,15 +534,11 @@ function Timeliner(target, host) {
   style(trash.dom, button_styles, { marginRight: "2px" });
   bottom_right.appendChild(trash.dom);
 
-  // pane_status.appendChild(document.createTextNode(' | TODO <Dock Full | Dock Botton | Snap Window Edges | zoom in | zoom out | Settings | help>'));
-
   //
   // Handle DOM Views
   //
 
   // Shadow Root
-  //var root = document.createElement("timeliner");
-  //document.body.appendChild(root);
   var root = host;
 
   root.appendChild(pane);
@@ -670,7 +617,7 @@ function Timeliner(target, host) {
     // };
     // TODO: remove ugly hardcodes
     width -= 4;
-    height -= 44;
+    height -= 22;
 
     Settings.width = width - Settings.LEFT_PANE_WIDTH;
     Settings.height = height;
@@ -716,6 +663,17 @@ function Timeliner(target, host) {
   }
 
   this.addLayer = addLayer;
+
+  function setLayerHighLights(name, layerUpdate) {
+    layers = layer_store.value || {};
+    let layer = layers.find(l => l.name === name);
+    layer.highlights = layerUpdate;
+    console.log("aa", layers, layer);
+
+    layer_panel.setState(layer_store);
+  }
+
+  this.setLayerHighLights = setLayerHighLights;
 
   this.setTarget = function(t) {
     timeline = t;
