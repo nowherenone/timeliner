@@ -72,7 +72,7 @@ function LayerCabinet(data, dispatcher) {
     marginLeft: "2px",
     marginRight: "2px",
     position: "absolute",
-    right: "0",
+    right: "20px",
     top: "5px"
   });
 
@@ -134,7 +134,7 @@ function LayerCabinet(data, dispatcher) {
   style(operations_div, {
     marginTop: "25px",
     position: "absolute",
-    right: "-30px"
+    right: "-10px"
     // borderBottom: '1px solid ' + Theme.b
   });
   top.appendChild(operations_div);

@@ -123,7 +123,13 @@ function TimelinePanel(data, dispatcher) {
   var renderItems = [];
 
   function EasingRect(x1, y1, x2, y2, color, frame, frame2) {
+    // var x, y2;
+
+    //x = time_to_x(frame.time);
+    //y2 = y + LINE_HEIGHT * 0.5 - DIAMOND_SIZE / 2;
+
     var self = this;
+    var isOver = false;
 
     this.path = function() {
       ctx_wrap
@@ -140,12 +146,25 @@ function TimelinePanel(data, dispatcher) {
     };
 
     this.mouseover = function() {
+      isOver = false;
+      //canvas.style.cursor = "move"; // pointer move ew-resize
+      //self.paint(ctx_wrap);
+    };
+
+    this.mouseout = function() {
+      isOver = false;
+      canvas.style.cursor = "default";
+      //self.paint(ctx_wrap);
+    };
+
+    /*
+    this.mouseover = function() {
       //canvas.style.cursor = "pointer"; // pointer move ew-resize
     };
 
     this.mouseout = function() {
       canvas.style.cursor = "default";
-    };
+    };*/
 
     this.mousedrag = function(e) {
       return;
@@ -169,7 +188,6 @@ function TimelinePanel(data, dispatcher) {
     y2 = y + LINE_HEIGHT * 0.5 - DIAMOND_SIZE / 2;
 
     var self = this;
-
     var isOver = false;
 
     this.path = function(ctx_wrap) {
@@ -314,7 +332,8 @@ function TimelinePanel(data, dispatcher) {
       if (item.mouseover) item.mouseover();
 
       if (mousedown2) {
-        mousedownItem = item;
+        // TODO dragging fix
+        //mousedownItem = item;
       }
     }
 
@@ -382,7 +401,7 @@ function TimelinePanel(data, dispatcher) {
       // vertical lines
       ctx.strokeStyle = Theme.b;
       ctx.beginPath();
-      ctx.moveTo(x, 0);
+      ctx.moveTo(x, 25);
       ctx.lineTo(x, height);
       ctx.stroke();
 
@@ -393,7 +412,7 @@ function TimelinePanel(data, dispatcher) {
       t = t ? parseInt(t, 10) : 0;
       //t = utils.format_friendly_seconds(t);
 
-      ctx.fillText(t, x, 25);
+      ctx.fillText(t, x, 23);
     }
 
     // Save it for automatical scrolling
@@ -407,7 +426,7 @@ function TimelinePanel(data, dispatcher) {
       ctx.strokeStyle = Theme.c;
       ctx.beginPath();
       x = i * units + LEFT_GUTTER - offsetUnits;
-      ctx.moveTo(x, MARKER_TRACK_HEIGHT - 0 - 10);
+      ctx.moveTo(x, MARKER_TRACK_HEIGHT - 1 - 10);
       ctx.lineTo(x, MARKER_TRACK_HEIGHT - 16 - 10);
       ctx.stroke();
     }
@@ -422,8 +441,8 @@ function TimelinePanel(data, dispatcher) {
       ctx.strokeStyle = Theme.c;
       ctx.beginPath();
       x = i * units + LEFT_GUTTER - offsetUnits;
-      ctx.moveTo(x, MARKER_TRACK_HEIGHT - 0 - 10);
-      ctx.lineTo(x, MARKER_TRACK_HEIGHT - 10 - 10);
+      ctx.moveTo(x, MARKER_TRACK_HEIGHT - 4 - 10);
+      ctx.lineTo(x, MARKER_TRACK_HEIGHT - 16 - 10);
       ctx.stroke();
     }
 
@@ -457,18 +476,18 @@ function TimelinePanel(data, dispatcher) {
     ctx.fillStyle = "red"; // black
     ctx.textAlign = "center";
     ctx.beginPath();
-    ctx.moveTo(x, base_line + 5);
-    ctx.lineTo(x + 5, base_line);
-    ctx.lineTo(x + half_rect, base_line);
-    ctx.lineTo(x + half_rect, base_line - 15);
-    ctx.lineTo(x - half_rect, base_line - 15);
-    ctx.lineTo(x - half_rect, base_line);
-    ctx.lineTo(x - 5, base_line);
+    ctx.moveTo(x, base_line + 1);
+    ctx.lineTo(x + 5, base_line - 4);
+    ctx.lineTo(x + half_rect, base_line - 4);
+    ctx.lineTo(x + half_rect, base_line - 20);
+    ctx.lineTo(x - half_rect, base_line - 20);
+    ctx.lineTo(x - half_rect, base_line - 4);
+    ctx.lineTo(x - 5, base_line - 4);
     ctx.closePath();
     ctx.fill();
 
     ctx.fillStyle = "white";
-    ctx.fillText(txt, x, base_line - 4);
+    ctx.fillText(txt, x, base_line - 6);
 
     ctx.restore();
 
@@ -538,12 +557,6 @@ function TimelinePanel(data, dispatcher) {
     pointer = { x: x, y: y };
   }
 
-  /*
-  canvas.addEventListener("scroll", function() {
-    
-  });
-  */
-
   canvas.addEventListener("mouseout", function() {
     pointer = null;
   });
@@ -565,6 +578,14 @@ function TimelinePanel(data, dispatcher) {
     },
     function move(e) {
       mousedown2 = false;
+
+      /*
+      console.log(
+        "mouseMove",
+        mousedownItem,
+        mousedownItem && mousedownItem.mousedrag
+      );*/
+
       if (mousedownItem) {
         mouseDownThenMove = true;
         if (mousedownItem.mousedrag) {

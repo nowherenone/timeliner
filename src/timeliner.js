@@ -355,7 +355,9 @@ function Timeliner(target, host) {
 
     // 1 == 60
     const visibleBlocks = parseInt((width - Settings.LEFT_PANE_WIDTH) / 60, 10);
-    const needBlocks = parseInt(1050 / 60, 10) + 1;
+    const needBlocks = parseInt(duration / 60, 10) + 1;
+
+    //console.log(width, visibleBlocks, needBlocks);
 
     dispatcher.fire("update.scale", visibleBlocks / needBlocks);
   }
@@ -538,16 +540,18 @@ function Timeliner(target, host) {
 
   // scroll layers issues
 
-  this.selectLayer = layerName => {
+  this.selectLayer = (layerName, scroll) => {
     let layers = layer_store.value || [];
     layers.forEach(l => (l.selected = false));
 
     let layer = layers.find(l => l.name == layerName);
     layer.selected = true;
 
-    this.scrollToLayer(layerName);
+    if (scroll) this.scrollToLayer(layerName);
     repaintAll();
   };
+
+  dispatcher.on("select.layer", this.selectLayer);
 
   this.scrollToLayer = layerName => {
     const layerIndex = layer_store.value.findIndex(l => l.name == layerName);
@@ -663,7 +667,7 @@ function Timeliner(target, host) {
       // background: Theme.a,
       overflow: "hidden"
     });
-    left.style.width = Settings.LEFT_PANE_WIDTH + "px";
+    left.style.width = Settings.LEFT_PANE_WIDTH + 20 + "px";
 
     // right.style.cssText = 'position: absolute; top: 0px;';
     right.style.position = "absolute";

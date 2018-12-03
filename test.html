@@ -45,7 +45,6 @@
         timeliner.addLayer("rotate" + index);
       }
 
-      timeliner.setDuration(25);
       timeliner.setCurrentTime(3, 4500.324);
 
       timeliner.setLayerValues("rotate", [3, 10, 20]);
@@ -58,6 +57,7 @@
         }
       ]);
 
+      timeliner.setDuration(20);
       console.log(timeliner);
 
       //keyframe.move
@@ -89,7 +89,7 @@
         console.log("controls.stop", d);
       });
 
-      timeliner.selectLayer("rotate6");
+      // timeliner.selectLayer("rotate6");
 
       // dispatcher.on("controls.play", startPlaying);
       //dispatcher.on("controls.pause", pausePlaying);

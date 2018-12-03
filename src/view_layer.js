@@ -17,12 +17,15 @@ function LayerView(layer, dispatcher) {
 
   var keyframe_button = document.createElement("button");
   keyframe_button.innerHTML = "&#9672;"; // '&diams;' &#9671; 9679 9670 9672
+  keyframe_button.setAttribute("class", "TimelineWrapper KeyframeButton");
+  /*
   keyframe_button.style.cssText =
     "background: none; font-size: 12px; padding: 0px; font-family: monospace; float: right; width: 20px; height: " +
     height +
-    "px; border-style:none; outline: none;position: relative;top: 1px;cursor:pointer;color:" +
+    "px; border-style:none; outline: none;position: relative;top: 1px;left:-15px;cursor:pointer;color:" +
     Theme.c +
     ";"; //  border-style:inset;
+  */
 
   keyframe_button.addEventListener("click", function(e) {
     console.log("clicked:keyframing...", state.get("_value").value);
@@ -31,10 +34,12 @@ function LayerView(layer, dispatcher) {
 
   dom.appendChild(label);
   dom.appendChild(keyframe_button);
+  dom.setAttribute("class", "TimelineWrapper LayerName");
 
   utils.style(dom, {
     textAlign: "left",
     margin: "0px 0px 0px 0px",
+    cursor: "pointer",
     paddingLeft: "5px",
     borderBottom: "1px solid " + Theme.b,
     top: 0,
@@ -43,12 +48,19 @@ function LayerView(layer, dispatcher) {
     color: Theme.c
   });
 
+  //this.selectLayer = layerName => {
+
+  dom.addEventListener("click", e => {
+    //console.log("select.layer", this.labelId);
+    dispatcher.fire("select.layer", this.labelId);
+  });
+
   this.dom = dom;
 
   this.repaint = repaint;
   var state;
 
-  this.setState = function(l, s) {
+  this.setState = (l, s) => {
     layer = l;
     state = s;
 
@@ -57,15 +69,16 @@ function LayerView(layer, dispatcher) {
       tmp_value.value = 0;
     }
 
+    this.labelId = state.get("name").value;
     //number.setValue(tmp_value.value);
     //console.log(state);
     label.textContent = state.get("label").value || state.get("name").value;
 
     // If this is a selected layer
     if (state.get("selected").value) {
-      utils.style(dom, { background: "#000" });
+      dom.setAttribute("class", "TimelineWrapper LayerName Selected");
     } else {
-      utils.style(dom, { background: Theme.a });
+      dom.setAttribute("class", "TimelineWrapper LayerName");
     }
 
     repaint();
