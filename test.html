@@ -17,7 +17,7 @@
     </style>
     <div
       id="host"
-      style="position: absolute; top 10px; left:10px; background : #888; width: 700px; height: 150px;"
+      style="position: absolute; top 10px; left:10px; background : #888; width: 700px; height: 250px;"
     ></div>
 
     <div id="box"></div>
@@ -40,6 +40,10 @@
       timeliner.addLayer("y3");
       timeliner.addLayer("rotate4");
       timeliner.addLayer("rotate256");
+
+      for (let index = 0; index < 200; index++) {
+        timeliner.addLayer("rotate" + index);
+      }
 
       timeliner.setDuration(25);
       timeliner.setCurrentTime(3);
@@ -84,6 +88,8 @@
       timeliner.dispatcher.on("controls.stop", d => {
         console.log("controls.stop", d);
       });
+
+      //timeliner.scrollToLayer(2);
 
       // dispatcher.on("controls.play", startPlaying);
       //dispatcher.on("controls.pause", pausePlaying);

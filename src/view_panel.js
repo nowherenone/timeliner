@@ -60,8 +60,13 @@ function TimelinePanel(data, dispatcher) {
     SCROLL_HEIGHT;
   var layers = data.get("layers").value;
 
-  this.scrollTo = function(s, y) {
+  this.scrollTo = function(s) {
     scrollTop = s * Math.max(layers.length * LINE_HEIGHT - SCROLL_HEIGHT, 0);
+    repaint();
+  };
+
+  this.scrollBy = function(s) {
+    scrollTop = s;
     repaint();
   };
 
@@ -132,7 +137,7 @@ function TimelinePanel(data, dispatcher) {
     };
 
     this.mouseover = function() {
-      canvas.style.cursor = "pointer"; // pointer move ew-resize
+      //canvas.style.cursor = "pointer"; // pointer move ew-resize
     };
 
     this.mouseout = function() {
@@ -140,6 +145,7 @@ function TimelinePanel(data, dispatcher) {
     };
 
     this.mousedrag = function(e) {
+      return;
       var t1 = x_to_time(x1 + e.dx);
       t1 = Math.max(0, t1);
       // TODO limit moving to neighbours
@@ -183,7 +189,7 @@ function TimelinePanel(data, dispatcher) {
 
     this.mouseover = function() {
       isOver = true;
-      canvas.style.cursor = "move"; // pointer move ew-resize
+      //canvas.style.cursor = "move"; // pointer move ew-resize
       self.paint(ctx_wrap);
     };
 
@@ -194,6 +200,7 @@ function TimelinePanel(data, dispatcher) {
     };
 
     this.mousedrag = function(e) {
+      return;
       var t = x_to_time(x + e.dx);
       t = Math.max(0, t);
       // TODO limit moving to neighbours

@@ -217,10 +217,15 @@ function Timeliner(target, host) {
     dispatcher.fire("update.scrollTime", time);
   };
 
-  function setCurrentTime(value) {
+  function setCurrentTime(value, cartime) {
     value = Math.max(0, value);
     currentTimeStore.value = value;
     //if (start_play) start_play = performance.now() - value * 1000;
+
+    // set car time
+    if (cartime) {
+      data.setValue("ui:carTime");
+    }
 
     // processing automatic horizontal scrolling
     if (value !== undefined) {
@@ -422,17 +427,19 @@ function Timeliner(target, host) {
 
   var footer_styles = {
     position: "absolute",
-    width: "100%",
+    //width: "100%",
     height: "22px",
     lineHeight: "22px",
     bottom: "0",
+    right: "0px",
     // padding: '2px',
     background: Theme.a,
     fontSize: "11px"
   };
 
   style(pane_status, footer_styles, {
-    borderTop: "1px solid " + Theme.b
+    borderTop: "1px solid " + Theme.b,
+    width: "100%"
   });
 
   pane.appendChild(div);
@@ -519,24 +526,32 @@ function Timeliner(target, host) {
   var scrollbar = new ScrollBar(200, 10);
   div.appendChild(scrollbar.dom);
 
-  // percentages
-  scrollbar.onScroll.do(function(type, scrollTo) {
-    switch (type) {
-      case "scrollto":
-        layer_panel.scrollTo(scrollTo);
-        timeline.scrollTo(scrollTo);
-        break;
-      //		case 'pageup':
-      // 			scrollTop -= pageOffset;
-      // 			me.draw();
-      // 			me.updateScrollbar();
-      // 			break;
-      // 		case 'pagedown':
-      // 			scrollTop += pageOffset;
-      // 			me.draw();
-      // 			me.updateScrollbar();
-      // 			break;
+  // scroll layers issues
+
+  this.scrollToLayer = layerName => {
+    const layerIndex = layer_store.value.findIndex(l => l.name == layerName);
+    if (layerIndex !== undefined) {
+      this.scrollLayers(layerIndex * 0.22); // Magic number
     }
+  };
+
+  this.scrollLayers = scrollTo => {
+    console.log(layer_panel, timeline, scrollTo);
+
+    const layerHeight = layer_panel.dom.children[0].scrollHeight;
+
+    layer_panel.scrollBy(layerHeight * scrollTo);
+    timeline.scrollBy(layerHeight * scrollTo);
+    //console.log(scrollTo, layerHeight, timelineHeight);
+    //layer_panel.scrollTo((scrollTo * timelineHeight) / layerHeight); // Magic number  * 0.825
+    //timeline.scrollTo(scrollTo);
+  };
+
+  dispatcher.on("ui:scrollLayers", this.scrollLayers);
+
+  // percentages
+  scrollbar.onScroll.do((type, scrollTo) => {
+    if (type == "scrollto") dispatcher.fire("ui:scrollLayers", scrollTo);
   });
 
   // document.addEventListener('keypress', function(e) {
@@ -691,7 +706,7 @@ function Timeliner(target, host) {
     if (element === pane) {
       //element.style.width = w + "px";
       const { width, height } = host.getBoundingClientRect();
-      console.log(width, height);
+      //console.log(width, height);
       element.style.width = width + "px";
       element.style.height = height + "px";
       resize(width, height);

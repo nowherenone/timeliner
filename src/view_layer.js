@@ -10,22 +10,9 @@ function LayerView(layer, dispatcher) {
 
   var label = document.createElement("span");
 
-  label.style.cssText = "font-size: 12px; padding: 4px;";
+  label.style.cssText =
+    "font-size: 12px; padding: 4px; top: 1px; position: relative; width: 210px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; display: inline-block;";
 
-  var dropdown = document.createElement("select");
-  var option;
-  dropdown.style.cssText =
-    "font-size: 10px; width: 60px; margin: 0; float: right; text-align: right;";
-
-  for (var k in Tweens) {
-    option = document.createElement("option");
-    option.text = k;
-    dropdown.appendChild(option);
-  }
-
-  dropdown.addEventListener("change", function(e) {
-    dispatcher.fire("ease", layer, dropdown.value);
-  });
   var height = Settings.LINE_HEIGHT - 1;
 
   var keyframe_button = document.createElement("button");
@@ -33,64 +20,20 @@ function LayerView(layer, dispatcher) {
   keyframe_button.style.cssText =
     "background: none; font-size: 12px; padding: 0px; font-family: monospace; float: right; width: 20px; height: " +
     height +
-    "px; border-style:none; outline: none;"; //  border-style:inset;
+    "px; border-style:none; outline: none;position: relative;top: 1px;cursor:pointer;"; //  border-style:inset;
 
   keyframe_button.addEventListener("click", function(e) {
-    //console.log("clicked:keyframing...", state.get("_value").value);
+    console.log("clicked:keyframing...", state.get("_value").value);
     dispatcher.fire("keyframe", layer, state.get("_value").value);
   });
 
-  /*
-  // Prev Keyframe
-  var button = document.createElement("button");
-  button.textContent = "<";
-  button.style.cssText = "font-size: 12px; padding: 1px; ";
-  dom.appendChild(button);
-
-  // Next Keyframe
-  button = document.createElement("button");
-  button.textContent = ">";
-  button.style.cssText = "font-size: 12px; padding: 1px; ";
-  dom.appendChild(button);
- */
-
-  function ToggleButton(text) {
-    // for css based button see http://codepen.io/mallendeo/pen/eLIiG
-
-    var button = document.createElement("button");
-    button.textContent = text;
-
-    utils.style(button, {
-      fontSize: "12px",
-      padding: "1px",
-      borderSize: "2px",
-      outline: "none",
-      background: "#fff"
-    });
-
-    this.pressed = false;
-
-    button.onclick = function() {
-      this.pressed = !this.pressed;
-
-      utils.style(button, {
-        borderStyle: this.pressed ? "inset" : "outset" // inset outset groove ridge
-      });
-
-      if (this.onClick) this.onClick();
-    }.bind(this);
-
-    this.dom = button;
-  }
-
   dom.appendChild(label);
   dom.appendChild(keyframe_button);
-  //dom.appendChild(number.dom);
-  dom.appendChild(dropdown);
 
   utils.style(dom, {
     textAlign: "left",
-    margin: "0px 0px 0px 5px",
+    margin: "0px 0px 0px 0px",
+    paddingLeft: "5px",
     borderBottom: "1px solid " + Theme.b,
     top: 0,
     left: 0,
@@ -119,24 +62,10 @@ function LayerView(layer, dispatcher) {
   };
 
   function repaint(s) {
-    dropdown.style.opacity = 0;
-    dropdown.disabled = true;
     keyframe_button.style.color = Theme.b;
-    // keyframe_button.disabled = false;
-    // keyframe_button.style.borderStyle = 'solid';
-
-    var tween = null;
     var o = utils.timeAtLayer(layer, s);
 
     if (!o) return;
-
-    if (o.can_tween) {
-      dropdown.style.opacity = 1;
-      dropdown.disabled = false;
-      // if (o.tween)
-      dropdown.value = o.tween ? o.tween : "none";
-      if (dropdown.value === "none") dropdown.style.opacity = 0.5;
-    }
 
     if (o.keyframe) {
       keyframe_button.style.color = Theme.c;

@@ -45,19 +45,6 @@ function LayerCabinet(data, dispatcher) {
     padding: "3px 4px 3px 4px"
   };
 
-  var play_button = new IconButton(16, "play", "play", dispatcher);
-  style(play_button.dom, button_styles, { marginTop: "2px" });
-  play_button.onClick(function(e) {
-    e.preventDefault();
-    dispatcher.fire("controls.toggle_play");
-  });
-
-  var stop_button = new IconButton(16, "stop", "stop", dispatcher);
-  style(stop_button.dom, button_styles, { marginTop: "2px" });
-  stop_button.onClick(function(e) {
-    dispatcher.fire("controls.stop");
-  });
-
   /*
   var undo_button = new IconButton(16, "undo", "undo", dispatcher);
   style(undo_button.dom, op_button_styles);
@@ -83,7 +70,10 @@ function LayerCabinet(data, dispatcher) {
     width: "90px",
     margin: "0px",
     marginLeft: "2px",
-    marginRight: "2px"
+    marginRight: "2px",
+    position: "absolute",
+    right: "0",
+    top: "5px"
   });
 
   var draggingRange = 0;
@@ -115,156 +105,60 @@ function LayerCabinet(data, dispatcher) {
   var currentTimeStore = data.get("ui:currentTime");
   var totalTimeStore = data.get("ui:totalTime");
 
-  // UI2StoreBind(view, datastore) {
-  // 	view.onChange.do(function(v) {
-  // 		datastore.value = view;
-  // 	})
-
-  // 	datastore.onChange.do(function(v) {
-  // 		view.setValue = v;
-  // 	})
-  // }
-  /*
-  currentTime.onChange.do(function(value, done) {
-    //dispatcher.fire("time.update", value);
-    // repaint();
-  });
-
-  totalTime.onChange.do(function(value, done) {
-    totalTimeStore.value = value;
-    repaint();
-  });
-*/
-
   // Play Controls
   var currentTime = document.createElement("span");
   var totalTime = document.createElement("span");
   var timeBlock = document.createElement("div");
-  timeBlock.style = "display:inline-block; width : 50px";
 
+  var carTimeBlock = document.createElement("div");
+  var carTime = document.createElement("span");
+  timeBlock.style =
+    "display:inline-block; width : 150px; position: absolute; left:5px;top:5px;";
+
+  timeBlock.appendChild(document.createTextNode("Frames: ")); // 0:00:00 / 0:10:00
   timeBlock.appendChild(currentTime);
   timeBlock.appendChild(document.createTextNode("/")); // 0:00:00 / 0:10:00
   timeBlock.appendChild(totalTime);
 
+  carTimeBlock.appendChild(document.createTextNode("M.Time: ")); // 0:00:00 / 0:10:00
+  carTimeBlock.appendChild(carTime);
+  carTimeBlock.style =
+    "display:inline-block; width : 150px; position: absolute; left:5px;top:20px;";
+
   top.appendChild(timeBlock);
-  top.appendChild(play_button.dom);
-  top.appendChild(stop_button.dom);
+  top.appendChild(carTimeBlock);
+
   top.appendChild(range);
 
   var operations_div = document.createElement("div");
   style(operations_div, {
-    marginTop: "4px"
+    marginTop: "25px",
+    position: "absolute",
+    right: "-30px"
     // borderBottom: '1px solid ' + Theme.b
   });
   top.appendChild(operations_div);
+
+  var play_button = new IconButton(16, "play", "play", dispatcher);
+  style(play_button.dom, button_styles, { marginTop: "2px" });
+  play_button.onClick(function(e) {
+    e.preventDefault();
+    dispatcher.fire("controls.toggle_play");
+  });
+
+  var stop_button = new IconButton(16, "stop", "stop", dispatcher);
+  style(stop_button.dom, button_styles, { marginTop: "2px" });
+  stop_button.onClick(function(e) {
+    dispatcher.fire("controls.stop");
+  });
+
+  operations_div.appendChild(play_button.dom);
+  operations_div.appendChild(stop_button.dom);
+
   // top.appendChild(document.createElement('br'));
   var file_open = new IconButton(16, "folder_open_alt", "Open", dispatcher);
   style(file_open.dom, op_button_styles);
   operations_div.appendChild(file_open.dom);
-
-  /*
-  // open _alt
-  var file_open = new IconButton(16, "folder_open_alt", "Open", dispatcher);
-  style(file_open.dom, op_button_styles);
-  operations_div.appendChild(file_open.dom);
-
-  function populateOpen() {
-    while (dropdown.length) {
-      dropdown.remove(0);
-    }
-
-    var option;
-    option = document.createElement("option");
-    option.text = "New";
-    option.value = "*new*";
-    dropdown.add(option);
-
-    option = document.createElement("option");
-    option.text = "Import JSON";
-    option.value = "*import*";
-    dropdown.add(option);
-
-    // Doesn't work
-    // option = document.createElement('option');
-    // option.text = 'Select File';
-    // option.value = '*select*';
-    // dropdown.add(option);
-
-    option = document.createElement("option");
-    option.text = "==Open==";
-    option.disabled = true;
-    option.selected = true;
-    dropdown.add(option);
-
-    var regex = new RegExp(STORAGE_PREFIX + "(.*)");
-    for (var key in localStorage) {
-      // console.log(key);
-
-      var match = regex.exec(key);
-      if (match) {
-        option = document.createElement("option");
-        option.text = match[1];
-
-        dropdown.add(option);
-      }
-    }
-  }
-
-  // listen on other tabs
-  window.addEventListener("storage", function(e) {
-    var regex = new RegExp(STORAGE_PREFIX + "(.*)");
-    if (regex.exec(e.key)) {
-      populateOpen();
-    }
-  });
-
-  dispatcher.on("save:done", populateOpen);
-
-  var dropdown = document.createElement("select");
-
-  style(dropdown, {
-    position: "absolute",
-    // right: 0,
-    // margin: 0,
-    opacity: 0,
-    width: "16px",
-    height: "16px"
-    // zIndex: 1,
-  });
-
-  dropdown.addEventListener("change", function(e) {
-    // console.log('changed', dropdown.length, dropdown.value);
-
-    switch (dropdown.value) {
-      case "*new*":
-        dispatcher.fire("new");
-        break;
-      case "*import*":
-        dispatcher.fire("import");
-        break;
-      case "*select*":
-        dispatcher.fire("openfile");
-        break;
-      default:
-        dispatcher.fire("open", dropdown.value);
-        break;
-    }
-  });
-
-  file_open.dom.insertBefore(dropdown, file_open.dom.firstChild);
-
-  populateOpen();
-
-  // // json import
-  // var import_json = new IconButton(16, 'signin', 'Import JSON', dispatcher);
-  // operations_div.appendChild(import_json.dom);
-  // import_json.onClick(function() {
-  // 	dispatcher.fire('import');
-  // });
-
-  // // new
-  // var file_alt = new IconButton(16, 'file_alt', 'New', dispatcher);
-  // operations_div.appendChild(file_alt.dom);
 
   // save
   var save = new IconButton(16, "save", "Save", dispatcher);
@@ -273,41 +167,6 @@ function LayerCabinet(data, dispatcher) {
   save.onClick(function() {
     dispatcher.fire("save");
   });
-
-  // save as
-  var save_as = new IconButton(16, "paste", "Save as", dispatcher);
-  style(save_as.dom, op_button_styles);
-  operations_div.appendChild(save_as.dom);
-  save_as.onClick(function() {
-    dispatcher.fire("save_as");
-  });
-
-  // download json (export)
-  var download_alt = new IconButton(
-    16,
-    "download_alt",
-    "Download / Export JSON to file",
-    dispatcher
-  );
-  style(download_alt.dom, op_button_styles);
-  operations_div.appendChild(download_alt.dom);
-  download_alt.onClick(function() {
-    dispatcher.fire("export");
-  });
-
-  var upload_alt = new IconButton(
-    16,
-    "upload_alt",
-    "Load from file",
-    dispatcher
-  );
-  style(upload_alt.dom, op_button_styles);
-  operations_div.appendChild(upload_alt.dom);
-  upload_alt.onClick(function() {
-    dispatcher.fire("openfile");
-  });
-
-*/
 
   var span = document.createElement("span");
   span.style.width = "20px";
@@ -324,14 +183,15 @@ function LayerCabinet(data, dispatcher) {
   //var minus = new IconButton(16, "minus", "minus", dispatcher);
   //operations_div.appendChild(minus.dom);
 
-  /*
-	// // show layer
-	// var eye_open = new IconButton(16, 'eye_open', 'eye_open', dispatcher);
-	// operations_div.appendChild(eye_open.dom);
+  // // show layer
+  // var eye_open = new IconButton(16, 'eye_open', 'eye_open', dispatcher);
+  // operations_div.appendChild(eye_open.dom);
 
-	// // hide / disable layer
-	// var eye_close = new IconButton(16, 'eye_close', 'eye_close', dispatcher);
-	// operations_div.appendChild(eye_close.dom);
+  // // hide / disable layer
+  // var eye_close = new IconButton(16, 'eye_close', 'eye_close', dispatcher);
+  // operations_div.appendChild(eye_close.dom);
+  /*
+
 
 
 
@@ -431,6 +291,8 @@ function LayerCabinet(data, dispatcher) {
 
     currentTime.innerHTML = current ? parseInt(current, 10) : 0;
     totalTime.innerHTML = total ? parseInt(total, 10) : 0;
+
+    carTime.innerHTML = data.get("ui:carTime").value || "N/A";
     var i;
 
     s = s || 0;
@@ -443,7 +305,6 @@ function LayerCabinet(data, dispatcher) {
       }
 
       layer_uis[i].setState(layers[i], layer_store.get(i));
-      // layer_uis[i].setState('layers'+':'+i);
       layer_uis[i].repaint(s);
     }
 
@@ -456,6 +317,10 @@ function LayerCabinet(data, dispatcher) {
   this.scrollTo = function(x) {
     layer_scroll.scrollTop =
       x * (layer_scroll.scrollHeight - layer_scroll.clientHeight);
+  };
+
+  this.scrollBy = function(s) {
+    layer_scroll.scrollTop = s;
   };
 
   this.dom = div;
