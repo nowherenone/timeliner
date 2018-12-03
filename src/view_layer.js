@@ -20,7 +20,9 @@ function LayerView(layer, dispatcher) {
   keyframe_button.style.cssText =
     "background: none; font-size: 12px; padding: 0px; font-family: monospace; float: right; width: 20px; height: " +
     height +
-    "px; border-style:none; outline: none;position: relative;top: 1px;cursor:pointer;"; //  border-style:inset;
+    "px; border-style:none; outline: none;position: relative;top: 1px;cursor:pointer;color:" +
+    Theme.c +
+    ";"; //  border-style:inset;
 
   keyframe_button.addEventListener("click", function(e) {
     console.log("clicked:keyframing...", state.get("_value").value);
@@ -56,28 +58,38 @@ function LayerView(layer, dispatcher) {
     }
 
     //number.setValue(tmp_value.value);
-    label.textContent = state.get("name").value;
+    //console.log(state);
+    label.textContent = state.get("label").value || state.get("name").value;
+
+    // If this is a selected layer
+    if (state.get("selected").value) {
+      utils.style(dom, { background: "#000" });
+    } else {
+      utils.style(dom, { background: Theme.a });
+    }
 
     repaint();
   };
 
   function repaint(s) {
-    keyframe_button.style.color = Theme.b;
-    var o = utils.timeAtLayer(layer, s);
-
+    return;
+    //keyframe_button.style.color = Theme.b;
+    //var o = utils.timeAtLayer(layer, s);
+    /*
     if (!o) return;
 
-    if (o.keyframe) {
-      keyframe_button.style.color = Theme.c;
-      // keyframe_button.disabled = true;
-      // keyframe_button.style.borderStyle = 'inset';
-    }
+    //if (o.keyframe) {
+    keyframe_button.style.color = Theme.c;
+    // keyframe_button.disabled = true;
+    // keyframe_button.style.borderStyle = 'inset';
+    // }
 
     state.get("_value").value = o.value;
     //number.setValue(o.value);
     //number.paint();
 
     dispatcher.fire("target.notify", layer.name, o.value);
+    */
   }
 }
 

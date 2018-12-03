@@ -321,6 +321,7 @@ function LayerCabinet(data, dispatcher) {
 
   this.scrollBy = function(s) {
     layer_scroll.scrollTop = s;
+    return layer_scroll.scrollTop;
   };
 
   this.dom = div;

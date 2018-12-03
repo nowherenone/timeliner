@@ -66,8 +66,11 @@ function TimelinePanel(data, dispatcher) {
   };
 
   this.scrollBy = function(s) {
+    const maxScroll = Math.max(layers.length * LINE_HEIGHT - SCROLL_HEIGHT, 0);
     scrollTop = s;
     repaint();
+
+    return scrollTop;
   };
 
   this.resize = function() {
@@ -443,7 +446,7 @@ function TimelinePanel(data, dispatcher) {
     var txt = parseInt(currentTime, 10);
     var textWidth = ctx.measureText(txt).width;
 
-    var base_line = MARKER_TRACK_HEIGHT - 5,
+    var base_line = MARKER_TRACK_HEIGHT - 10,
       half_rect = textWidth / 2 + 4;
 
     ctx.beginPath();
@@ -457,8 +460,8 @@ function TimelinePanel(data, dispatcher) {
     ctx.moveTo(x, base_line + 5);
     ctx.lineTo(x + 5, base_line);
     ctx.lineTo(x + half_rect, base_line);
-    ctx.lineTo(x + half_rect, base_line - 14);
-    ctx.lineTo(x - half_rect, base_line - 14);
+    ctx.lineTo(x + half_rect, base_line - 15);
+    ctx.lineTo(x - half_rect, base_line - 15);
     ctx.lineTo(x - half_rect, base_line);
     ctx.lineTo(x - 5, base_line);
     ctx.closePath();
@@ -534,6 +537,12 @@ function TimelinePanel(data, dispatcher) {
     pointerdidMoved = true;
     pointer = { x: x, y: y };
   }
+
+  /*
+  canvas.addEventListener("scroll", function() {
+    
+  });
+  */
 
   canvas.addEventListener("mouseout", function() {
     pointer = null;

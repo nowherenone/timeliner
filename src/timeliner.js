@@ -24,10 +24,11 @@ var Z_INDEX = 999;
 
 var width, height, path, layers, x2;
 
-function LayerProp(name) {
+function LayerProp(name, label) {
   this.name = name;
+  this.label = label;
   this.values = [];
-
+  this.selected = false;
   this._value = 0;
 
   this._color = "#" + ((Math.random() * 0xffffff) | 0).toString(16);
@@ -35,7 +36,7 @@ function LayerProp(name) {
   this.highlights = [];
   this.markers = [];
 
-  this.update = function(update) {};
+  this.select = function(update) {};
   /*
 	this.max
 	this.min
@@ -83,19 +84,20 @@ function Timeliner(target, host) {
     // console.log('layer', layer, value);
 
     if (typeof v === "number") {
+      /*
       layer.values.splice(v, 0, {
         time: t,
         value: value,
         _color: "#" + ((Math.random() * 0xffffff) | 0).toString(16)
       });
+      */
 
       undo_manager.save(new UndoState(data, "Add Keyframe"));
-
-      dispatcher.fire("keyframe.add", t);
+      dispatcher.fire("keyframe.add", layer.name, t);
     } else {
       //console.log("remove from index", v);
-      layer.values.splice(v.index, 1);
-      dispatcher.fire("keyframe.remove", t);
+      //layer.values.splice(v.index, 1);
+      dispatcher.fire("keyframe.remove", layer.name, t);
       undo_manager.save(new UndoState(data, "Remove Keyframe"));
     }
 
@@ -224,7 +226,7 @@ function Timeliner(target, host) {
 
     // set car time
     if (cartime) {
-      data.setValue("ui:carTime");
+      data.setValue("ui:carTime", cartime);
     }
 
     // processing automatic horizontal scrolling
@@ -348,6 +350,14 @@ function Timeliner(target, host) {
   function setDuration(duration) {
     data.setValue("ui:totalTime", duration);
     updateState();
+
+    const { width } = data.get("ui:bounds").value;
+
+    // 1 == 60
+    const visibleBlocks = parseInt((width - Settings.LEFT_PANE_WIDTH) / 60, 10);
+    const needBlocks = parseInt(1050 / 60, 10) + 1;
+
+    dispatcher.fire("update.scale", visibleBlocks / needBlocks);
   }
   this.setDuration = setDuration;
 
@@ -447,7 +457,7 @@ function Timeliner(target, host) {
   //pane.appendChild(pane_title);
 
   var label_status = document.createElement("span");
-  label_status.textContent = "hello!";
+  label_status.textContent = "";
   label_status.style.marginLeft = "10px";
 
   this.setStatus = function(text) {
@@ -524,28 +534,48 @@ function Timeliner(target, host) {
   div.appendChild(timeline.dom);
 
   var scrollbar = new ScrollBar(200, 10);
-  div.appendChild(scrollbar.dom);
+  // div.appendChild(scrollbar.dom);
 
   // scroll layers issues
+
+  this.selectLayer = layerName => {
+    let layers = layer_store.value || [];
+    layers.forEach(l => (l.selected = false));
+
+    let layer = layers.find(l => l.name == layerName);
+    layer.selected = true;
+
+    this.scrollToLayer(layerName);
+    repaintAll();
+  };
 
   this.scrollToLayer = layerName => {
     const layerIndex = layer_store.value.findIndex(l => l.name == layerName);
     if (layerIndex !== undefined) {
-      this.scrollLayers(layerIndex * 0.22); // Magic number
+      this.scrollLayers((layerIndex - 1) * Settings.LINE_HEIGHT); // Magic number
     }
   };
 
   this.scrollLayers = scrollTo => {
-    console.log(layer_panel, timeline, scrollTo);
+    if (scrollTo < 0) scrollTo = 0;
+    let realScroll = layer_panel.scrollBy(scrollTo);
+    timeline.scrollBy(realScroll);
 
-    const layerHeight = layer_panel.dom.children[0].scrollHeight;
-
-    layer_panel.scrollBy(layerHeight * scrollTo);
-    timeline.scrollBy(layerHeight * scrollTo);
-    //console.log(scrollTo, layerHeight, timelineHeight);
-    //layer_panel.scrollTo((scrollTo * timelineHeight) / layerHeight); // Magic number  * 0.825
-    //timeline.scrollTo(scrollTo);
+    data.setValue("currentScroll", realScroll);
   };
+
+  this.wheelScroll = e => {
+    let currentScroll = data.get("currentScroll").value || 0;
+    if (e.deltaY < 0) {
+      this.scrollLayers(currentScroll - Settings.LINE_HEIGHT);
+    }
+    if (e.deltaY > 0) {
+      this.scrollLayers(currentScroll + Settings.LINE_HEIGHT);
+    }
+  };
+
+  layer_panel.dom.addEventListener("wheel", this.wheelScroll);
+  timeline.dom.addEventListener("wheel", this.wheelScroll);
 
   dispatcher.on("ui:scrollLayers", this.scrollLayers);
 
@@ -598,10 +628,11 @@ function Timeliner(target, host) {
   var needsResize = true;
 
   function resize(width, height) {
-    // data.get('ui:bounds').value = {
-    // 	width: width,
-    // 	height: height
-    // };
+    data.get("ui:bounds").value = {
+      width: width,
+      height: height
+    };
+
     // TODO: remove ugly hardcodes
     width -= 4;
     height -= 22;
@@ -640,8 +671,8 @@ function Timeliner(target, host) {
     right.style.left = Settings.LEFT_PANE_WIDTH + "px";
   }
 
-  function addLayer(name) {
-    var layer = new LayerProp(name);
+  function addLayer(name, label) {
+    var layer = new LayerProp(name, label);
 
     layers = layer_store.value;
     layers.push(layer);
@@ -707,9 +738,9 @@ function Timeliner(target, host) {
       //element.style.width = w + "px";
       const { width, height } = host.getBoundingClientRect();
       //console.log(width, height);
-      element.style.width = width + "px";
-      element.style.height = height + "px";
-      resize(width, height);
+      element.style.width = width - 2 + "px";
+      element.style.height = height - 2 + "px";
+      resize(width - 2, height - 2);
     } else {
       element.style.left = x + "px";
       element.style.top = y + "px";
@@ -719,6 +750,7 @@ function Timeliner(target, host) {
   }
 
   window.addEventListener("resize", function() {
+    setBounds(pane);
     //if (snapType) resizeEdges();
     //else needsResize = true;
   });
