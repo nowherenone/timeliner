@@ -181,11 +181,13 @@ function TimelinePanel(data, dispatcher) {
     };
   }
 
-  function Diamond(frame, y) {
+  function Diamond(frame, y, layer) {
     var x, y2;
 
     x = time_to_x(frame.time);
     y2 = y + LINE_HEIGHT * 0.5 - DIAMOND_SIZE / 2;
+    this.frame = frame;
+    this.layer = layer;
 
     var self = this;
     var isOver = false;
@@ -210,7 +212,7 @@ function TimelinePanel(data, dispatcher) {
 
     this.mouseover = function() {
       isOver = true;
-      //canvas.style.cursor = "move"; // pointer move ew-resize
+      canvas.style.cursor = "move"; // pointer move ew-resize
       self.paint(ctx_wrap);
     };
 
@@ -221,14 +223,13 @@ function TimelinePanel(data, dispatcher) {
     };
 
     this.mousedrag = function(e) {
-      return;
+      //return;
+
       var t = x_to_time(x + e.dx);
       t = Math.max(0, t);
       // TODO limit moving to neighbours
       frame.time = t;
       dispatcher.fire("time.update", t);
-      // console.log('frame', frame);
-      // console.log(s, format_friendly_seconds(s), this);
     };
   }
 
@@ -282,7 +283,7 @@ function TimelinePanel(data, dispatcher) {
       for (j = 0; j < values.length; j++) {
         // Dimonds
         frame = values[j];
-        renderItems.push(new Diamond(frame, y));
+        renderItems.push(new Diamond(frame, y, layer));
       }
     }
 
@@ -333,7 +334,14 @@ function TimelinePanel(data, dispatcher) {
 
       if (mousedown2) {
         // TODO dragging fix
-        //mousedownItem = item;
+        // TODO
+        //console.log(mousedownItem);
+        if (item && item.frame && mousedownItem !== item) {
+          mousedownItem = item;
+          mousedownItem.prevFrame = parseInt(mousedownItem.frame.time, 10);
+          //console.log(mousedownItem);
+        }
+        //mousedownItem.startPoint =
       }
     }
 
@@ -578,7 +586,6 @@ function TimelinePanel(data, dispatcher) {
     },
     function move(e) {
       mousedown2 = false;
-
       /*
       console.log(
         "mouseMove",
@@ -597,7 +604,12 @@ function TimelinePanel(data, dispatcher) {
     },
     function up(e) {
       if (mouseDownThenMove) {
-        dispatcher.fire("keyframe.move");
+        dispatcher.fire(
+          "keyframe.move",
+          mousedownItem.layer.name,
+          mousedownItem.prevFrame,
+          x_to_time(e.offsetx)
+        );
       } else {
         dispatcher.fire("time.update", x_to_time(e.offsetx));
       }

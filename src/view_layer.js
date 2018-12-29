@@ -1,5 +1,6 @@
 var Theme = require("./theme"),
   UINumber = require("./ui_number"),
+  IconButton = require("./ui_icon_button"),
   Tweens = require("./util_tween"),
   Settings = require("./settings"),
   utils = require("./utils");
@@ -15,25 +16,63 @@ function LayerView(layer, dispatcher) {
 
   var height = Settings.LINE_HEIGHT - 1;
 
+  //keyframe_button
+
+  /*
+  var trash = new IconButton(12, "trash", "Delete save", dispatcher);
+  trash.onClick(function() {
+    let layers = layer_store.value || [];
+    dispatcher.fire("controls.deleteLayer", layers.find(l => l.selected));
+  });
+  style(trash.dom, button_styles, { marginRight: "2px" });
+  bottom_right.appendChild(trash.dom);
+  */
+
   var keyframe_button = document.createElement("button");
   keyframe_button.innerHTML = "&#9672;"; // '&diams;' &#9671; 9679 9670 9672
   keyframe_button.setAttribute("class", "TimelineWrapper KeyframeButton");
-  /*
-  keyframe_button.style.cssText =
-    "background: none; font-size: 12px; padding: 0px; font-family: monospace; float: right; width: 20px; height: " +
-    height +
-    "px; border-style:none; outline: none;position: relative;top: 1px;left:-15px;cursor:pointer;color:" +
-    Theme.c +
-    ";"; //  border-style:inset;
-  */
+  keyframe_button.addEventListener(
+    "click",
+    function(e) {
+      dispatcher.fire("keyframe", layer, state.get("_value").value);
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    false
+  );
 
-  keyframe_button.addEventListener("click", function(e) {
-    console.log("clicked:keyframing...", state.get("_value").value);
-    dispatcher.fire("keyframe", layer, state.get("_value").value);
-  });
+  var delete_button = new IconButton(12, "trash", "Delete cuboid", dispatcher);
+  delete_button.dom.setAttribute("class", "TimelineWrapper DeleteButton");
+  delete_button.dom.addEventListener(
+    "click",
+    function(e) {
+      dispatcher.fire("controls.deleteLayer", layer.name);
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    false
+  );
+
+  var merge_button = new IconButton(12, "signin", "Merge cuboid", dispatcher);
+  merge_button.dom.setAttribute("class", "TimelineWrapper MergeButton");
+  merge_button.dom.addEventListener(
+    "click",
+    function(e) {
+      dispatcher.fire("controls.mergeLayer", layer.name);
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    false
+  );
+
+  /*delete_button.onClick(function() {
+    dispatcher.fire("controls.deleteLayer", layer.name);
+  });*/
 
   dom.appendChild(label);
   dom.appendChild(keyframe_button);
+  dom.appendChild(delete_button.dom);
+  dom.appendChild(merge_button.dom);
   dom.setAttribute("class", "TimelineWrapper LayerName");
 
   utils.style(dom, {
@@ -44,8 +83,8 @@ function LayerView(layer, dispatcher) {
     borderBottom: "1px solid " + Theme.b,
     top: 0,
     left: 0,
-    height: Settings.LINE_HEIGHT - 1 + "px",
-    color: Theme.c
+    height: Settings.LINE_HEIGHT - 1 + "px"
+    //color: Theme.c
   });
 
   //this.selectLayer = layerName => {

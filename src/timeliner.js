@@ -78,19 +78,22 @@ function Timeliner(target, host) {
     var index = layers.indexOf(layer);
 
     var t = data.get("ui:currentTime").value;
+
+    if (layer) dispatcher.fire("keyframe.add", layer.name, t);
+    /*
     var v = utils.findTimeinLayer(layer, t);
 
     // console.log(v, '...keyframe index', index, utils.format_friendly_seconds(t), typeof(v));
     // console.log('layer', layer, value);
 
     if (typeof v === "number") {
-      /*
+      
       layer.values.splice(v, 0, {
         time: t,
         value: value,
         _color: "#" + ((Math.random() * 0xffffff) | 0).toString(16)
       });
-      */
+     
 
       undo_manager.save(new UndoState(data, "Add Keyframe"));
       dispatcher.fire("keyframe.add", layer.name, t);
@@ -99,7 +102,7 @@ function Timeliner(target, host) {
       //layer.values.splice(v.index, 1);
       dispatcher.fire("keyframe.remove", layer.name, t);
       undo_manager.save(new UndoState(data, "Remove Keyframe"));
-    }
+    }*/
 
     repaintAll();
   });
@@ -113,6 +116,7 @@ function Timeliner(target, host) {
     if (layer._mute) return;
 
     var t = data.get("ui:currentTime").value;
+    /*
     var v = utils.findTimeinLayer(layer, t);
 
     // console.log(v, 'value.change', layer, value, utils.format_friendly_seconds(t), typeof(v));
@@ -126,7 +130,7 @@ function Timeliner(target, host) {
     } else {
       v.object.value = value;
       if (!dont_save) undo_manager.save(new UndoState(data, "Update value"));
-    }
+    }*/
 
     repaintAll();
   });
@@ -363,13 +367,14 @@ function Timeliner(target, host) {
   }
   this.setDuration = setDuration;
 
-  function updateState() {
+  var updateState = function updateState() {
     layers = layer_store.value; // FIXME: support Arrays
     layer_panel.setState(layer_store);
     timeline.setState(layer_store);
 
     repaintAll();
-  }
+  };
+  this.updateState = updateState;
 
   function repaintAll() {
     var content_height = layers.length * Settings.LINE_HEIGHT;
@@ -414,19 +419,7 @@ function Timeliner(target, host) {
   //div.style.top = "22px";
 
   var pane = document.createElement("div");
-
-  style(pane, {
-    margin: 0,
-    border: "1px solid " + Theme.a,
-    padding: 0,
-    overflow: "hidden",
-    backgroundColor: Theme.a,
-    color: Theme.d,
-    zIndex: Z_INDEX,
-    fontFamily: "monospace",
-    fontSize: "12px",
-    width: "100%"
-  });
+  pane.setAttribute("class", "TimelinerPanel");
 
   var button_styles = {
     width: "20px",
@@ -484,8 +477,20 @@ function Timeliner(target, host) {
   /**/
   // zoom in
   var zoom_in = new IconButton(12, "zoom_in", "zoom in", dispatcher);
+  zoom_in.onClick(function() {
+    var currentZoom = data.get("ui:timeScale").value;
+    data.setValue("ui:timeScale", currentZoom * 2);
+    timeline.repaint();
+  });
+
   // zoom out
   var zoom_out = new IconButton(12, "zoom_out", "zoom out", dispatcher);
+  zoom_out.onClick(function() {
+    var currentZoom = data.get("ui:timeScale").value;
+    data.setValue("ui:timeScale", currentZoom / 2);
+    timeline.repaint();
+  });
+
   // settings
   //var cog = new IconButton(12, "cog", "settings", dispatcher);
 
@@ -494,34 +499,32 @@ function Timeliner(target, host) {
   //bottom_right.appendChild(cog.dom);
 
   // add layer
+  /*
   var plus = new IconButton(12, "plus", "New Layer", dispatcher);
   plus.onClick(function() {
-    var name = prompt("Layer name?");
-    addLayer(name);
+    dispatcher.fire("controls.addLayer");
+    //var name = prompt("Layer name?");
+    //addLayer(name);
 
-    undo_manager.save(new UndoState(data, "Layer added"));
+    //undo_manager.save(new UndoState(data, "Layer added"));
 
     repaintAll();
   });
 
   style(plus.dom, button_styles);
   bottom_right.appendChild(plus.dom);
+  */
 
   // trash
+  /*
   var trash = new IconButton(12, "trash", "Delete save", dispatcher);
   trash.onClick(function() {
-    var name = data.get("name").value;
-    if (name && localStorage[STORAGE_PREFIX + name]) {
-      /*	var ok = confirm("Are you sure you wish to delete " + name + "?");
-      if (ok) {
-        delete localStorage[STORAGE_PREFIX + name];
-        dispatcher.fire("status", name + " deleted");
-        dispatcher.fire("save:done");
-      }*/
-    }
+    let layers = layer_store.value || [];
+    dispatcher.fire("controls.deleteLayer", layers.find(l => l.selected));
   });
   style(trash.dom, button_styles, { marginRight: "2px" });
   bottom_right.appendChild(trash.dom);
+  */
 
   //
   // Handle DOM Views
@@ -536,7 +539,7 @@ function Timeliner(target, host) {
   div.appendChild(timeline.dom);
 
   var scrollbar = new ScrollBar(200, 10);
-  // div.appendChild(scrollbar.dom);
+  //div.appendChild(scrollbar.dom);
 
   // scroll layers issues
 
@@ -615,6 +618,7 @@ function Timeliner(target, host) {
       active.blur();
     }
 
+    /*
     if (play) {
       dispatcher.fire("controls.toggle_play");
     } else if (enter) {
@@ -626,7 +630,7 @@ function Timeliner(target, host) {
       dispatcher.fire("controls.pause");
     } else {
       // console.log("keydown", e.keyCode);
-    }
+    }*/
   });
 
   var needsResize = true;
@@ -686,6 +690,16 @@ function Timeliner(target, host) {
 
   this.addLayer = addLayer;
 
+  function deleteLayer(name) {
+    let layers = data.get("layers").value;
+    layers = layers.filter(l => l.name != name);
+
+    data.setValue("layers", layers);
+    updateState();
+  }
+
+  this.deleteLayer = deleteLayer;
+
   function setLayerValues(name, markers = []) {
     let layer = (layer_store.value || {}).find(l => l.name === name);
     layer.values = markers.map(m => {
@@ -694,6 +708,7 @@ function Timeliner(target, host) {
       };
     });
     layer_panel.setState(layer_store);
+    updateState();
   }
 
   this.setLayerValues = setLayerValues;

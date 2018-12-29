@@ -155,11 +155,6 @@ function LayerCabinet(data, dispatcher) {
   operations_div.appendChild(play_button.dom);
   operations_div.appendChild(stop_button.dom);
 
-  // top.appendChild(document.createElement('br'));
-  var file_open = new IconButton(16, "folder_open_alt", "Open", dispatcher);
-  style(file_open.dom, op_button_styles);
-  operations_div.appendChild(file_open.dom);
-
   // save
   var save = new IconButton(16, "save", "Save", dispatcher);
   style(save.dom, op_button_styles);
@@ -167,6 +162,14 @@ function LayerCabinet(data, dispatcher) {
   save.onClick(function() {
     dispatcher.fire("save");
   });
+
+  // top.appendChild(document.createElement('br'));
+  var viewMode = new IconButton(16, "eye_open", "View mode", dispatcher);
+  style(viewMode.dom, op_button_styles);
+  viewMode.onClick(function() {
+    dispatcher.fire("ui.switchMode");
+  });
+  operations_div.appendChild(viewMode.dom);
 
   var span = document.createElement("span");
   span.style.width = "20px";
